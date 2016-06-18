@@ -1,0 +1,41 @@
+---
+title: "Human Trafficking on Backpage"
+author: "Gerald Belton"
+date: "June 18, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Open SQL Database
+
+```{r}
+library("RSQLite")
+# connect to the sqlite file
+con = dbConnect(SQLite(), dbname="bpscrape.sqlite")
+# get a list of all tables
+alltables = dbListTables(con)
+# get the Escorts table as a data.frame
+escorts = dbGetQuery( con,'select * from Escorts' )
+# get the Posts table as a data.frame
+posts = dbGetQuery( con,'select * from Posts' )
+
+# sample data
+head(escorts)
+head(posts)
+
+
+```
+
+## ToDo List: 
+
+* convert posts datetime string to posix datetime object  
+
+* convert escorts age string to numeric  
+
+* extract phone number from body text  
+
+     + phone number is the closest thing to a unique identifier for each escort  
+
