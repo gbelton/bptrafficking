@@ -1,7 +1,6 @@
 ---
 title: "Human Trafficking on Backpage"
 author: "Gerald Belton"
-date: "June 18, 2016"
 output: html_document
 ---
 
