@@ -21,6 +21,9 @@ escorts = dbGetQuery( con,'select * from Escorts' )
 # get the Posts table as a data.frame
 posts = dbGetQuery( con,'select * from Posts' )
 
+#close connection to database
+dbDisconnect(con)
+
 # sample data
 head(escorts)
 head(posts)
@@ -28,13 +31,67 @@ head(posts)
 
 ```
 
-## ToDo List: 
+## Cleaning Data
+```{r}
 
-* convert posts datetime string to posix datetime object  
+# convert datetime from string to POSIX datetime
+posts[[2]] <- as.POSIXlt(posts[,2], tx='', format = '%Y-%m-%d %H:%M:%S')
 
-* convert escorts age string to numeric  
+escorts$age <- as.numeric(escorts$age)
 
-* extract phone number from body text  
+```
 
-     + phone number is the closest thing to a unique identifier for each escort  
+```{r}
+library(stringr)
+
+# search body for phone number; start with the easy ones
+escorts$phone <- gsub("[^[:alnum:]]", "", escorts$body)
+escorts$phone <- as.character(str_extract(escorts$phone, "[0-9]{10}"))
+#that takes care of about 90% of the ads in a preliminary test
+#but we can do more; see next block
+
+```
+
+``` {r}
+#write a function that only operates if phone is na, and apply it 
+library(plyr)
+cleanphone1 <- function(x, y) {
+     if (is.na(x)) {
+          x <- y
+          x <- gsub('one', '1', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('two', '2', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('three', '3', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('four', '4', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('five', '5', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('six', '6', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('seven', '7', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('eight', '8', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('nine', '9', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('zero', '0', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('ten', '10', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('l', '1', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub('o', '0', x, perl=TRUE, ignore.case=TRUE)
+          x <- gsub("[^[:alnum:]]", "", x)
+          x <- as.character(str_extract(x, "[0-9]{10}"))
+          } else x <- x
+}
+
+escorts<-adply(escorts, 1, transform, phone=cleanphone1(phone, body))
+```
+
+That cleaned up a bunch; now let's check for phone numbers in the title:
+```{r}
+cleanphone2 <- function(x,y) {
+     if (is.na(x)) {
+          x <- y
+          x <- gsub("[^[:alnum:]]", "", x)
+          x <- as.character(str_extract(x, "[0-9]{10}"))
+          
+     } else x <- x
+     
+}
+escorts<-adply(escorts, 1, transform, phone=cleanphone2(phone, title))
+
+```
+
 
