@@ -1,0 +1,25 @@
+Monthly maintenance:
+
+stop cron (on piscraper):
+sudo /etc/init.d/cron stop
+
+Use WinSCP to copy file from PiScraper to the scraper folder on the laptop.
+Copy file from scraper folder to the Documents/R/bptrafficking folder
+
+Open the file (the copy in the scraper folder) in the SqliteBrowser.
+
+In the Execute SQL tab run this:
+delete from posts
+WHERE datetime < "2016-7-31 00:00:00"
+
+and then this:
+delete from Escorts 
+WHERE id not in (Select id from posts)
+
+click Write Changes and then File > Compact Database.
+
+Use WinSCP to copy the file back to PiScraper
+
+restart cron:
+sudo /etc/init.d/cron restart
+
